@@ -1,7 +1,6 @@
-from pytils.translit import slugify
-
 from django import forms
 from django.core.exceptions import ValidationError
+from pytils.translit import slugify
 
 from .models import Note
 
@@ -22,8 +21,10 @@ class NoteForm(forms.ModelForm):
         if not slug:
             title = cleaned_data.get('title')
             slug = slugify(title)[:100]
-        if Note.objects.filter(
-                slug=slug
-        ).exclude(id=self.instance.pk).exists():
+        if (
+            Note.objects.filter(slug=slug)
+            .exclude(id=self.instance.pk)
+            .exists()
+        ):
             raise ValidationError(slug + WARNING)
         return slug
