@@ -33,7 +33,7 @@ class NewsDetail(generic.DetailView):
             self.model.objects.prefetch_related('comment_set__author'),
             pk=self.kwargs['pk']
         )
-        return obj
+        return obj or None
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
