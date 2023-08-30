@@ -1,4 +1,3 @@
-# news/tests/test_content.py
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
@@ -13,44 +12,32 @@ class TestNotesListPage(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.first_author = User.objects.create(username='Первый Пользователь')
+        cls.first_client = Client()
+        cls.first_client.force_login(cls.first_author)
         cls.second_author = User.objects.create(username='Второй Пользователь')
-        cls.first_author_client = Client()
-        cls.first_author_client.force_login(cls.first_author)
-        cls.second_author_client = Client()
-        cls.second_author_client.force_login(cls.second_author)
+        cls.second_client = Client()
+        cls.second_client.force_login(cls.second_author)
         cls.list_url = reverse(
             'notes:list',
         )
 
-        cls.all_notes_first_author = Note.objects.bulk_create(
-            Note(
-                title=f'Заголовок_{index}',
-                author=cls.first_author,
-                text='Интересная заметка',
-                slug=f'readable_note_{index}',
-            )
-            for index in range(2)
-        )
-
-        cls.all_notes_second_author = Note.objects.bulk_create(
-            Note(
-                title=f'Заголовок_{index}',
-                author=cls.second_author,
-                text='Интересная заметка',
-                slug=f'interesting_note_{index}',
-            )
-            for index in range(2)
+        cls.first_note = Note.objects.create(
+            title='Заголовок_1',
+            author=cls.first_author,
+            text='Интересная заметка',
+            slug='readable_note_1',
         )
 
     def test_access_to_notes_of_other_user(self):
         users_statuses = (
-            (self.first_author_client, 'all_notes_first_author'),
-            (self.second_author_client, 'all_notes_second_author'),
+            (self.first_client, True),
+            (self.second_client, False),
         )
-        for user, list in users_statuses:
+        for user, status in users_statuses:
             with self.subTest(user=user):
                 response = user.get(self.list_url)
-                self.assertNotIn(list, response.context)
+                object_list = response.context['object_list']
+                self.assertEqual((self.first_note in object_list), status)
 
 
 class TestDetailPage(TestCase):

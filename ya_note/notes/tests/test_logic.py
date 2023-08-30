@@ -1,4 +1,3 @@
-# news/tests/test_logic.py
 from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
@@ -31,13 +30,13 @@ class TestCommentCreation(TestCase):
         notes_count = Note.objects.count()
         self.assertEqual(notes_count, 0)
 
-    def test_user_can_create_note(self):
+    def test_user_can_create_note_without_slug(self):
         response = self.auth_client.post(self.url, data=self.form_data)
         expected_slug = slugify(self.form_data['title'])
         self.assertRedirects(response, self.url_success)
         notes_count = Note.objects.count()
         self.assertEqual(notes_count, 1)
-        note = Note.objects.get()
+        note = Note.objects.last()
         self.assertEqual(note.text, self.NOTES_TEXT)
         self.assertEqual(note.slug, expected_slug)
         self.assertEqual(note.author, self.user)
@@ -67,6 +66,8 @@ class TestNoteAddEditDelete(TestCase):
     NEW_NOTES_TEXT = 'Обновлённый комментарий'
     NOTES_TITLE = 'Заголовок1'
     NEW_NOTES_TITLE = 'Заголовок2'
+    SLUG = 'zagolovok1'
+    NEW_SLUG = 'zagolovok2'
 
     @classmethod
     def setUpTestData(cls):
@@ -103,6 +104,8 @@ class TestNoteAddEditDelete(TestCase):
         self.note.refresh_from_db()
         self.assertEqual(self.note.text, self.NEW_NOTES_TEXT)
         self.assertEqual(self.note.title, self.NEW_NOTES_TITLE)
+        self.assertEqual(self.note.author, self.author)
+        self.assertEqual(self.note.slug, self.NEW_SLUG)
 
     def test_author_cant_delete_comment(self):
         notes_count = Note.objects.count()
@@ -120,3 +123,5 @@ class TestNoteAddEditDelete(TestCase):
         self.note.refresh_from_db()
         self.assertEqual(self.note.text, self.NOTES_TEXT)
         self.assertEqual(self.note.title, self.NOTES_TITLE)
+        self.assertEqual(self.note.author, self.author)
+        self.assertEqual(self.note.slug, self.SLUG)
