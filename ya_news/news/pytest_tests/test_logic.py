@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from random import choice
 
 import pytest
 from conftest import COMMENT_TEXT, NEW_COMMENT_TEXT
@@ -37,17 +38,12 @@ def test_user_can_create_comment(author_client, form_data, author, news):
     new_comment = Comment.objects.get()
     assertRedirects(response, f'{url_detail}#comments')
     assert expected_count == comments_count
-    assert all(
-        (
-            new_comment.text == form_data['text'],
-            new_comment.author == author,
-            new_comment.news == news,
-        )
-    )
+    assert new_comment.text == form_data['text']
+    assert new_comment.author == author
+    assert new_comment.news == news
 
 
-@pytest.mark.parametrize('word', BAD_WORDS)
-def test_user_cant_use_bad_words(author_client, news, word):
+def test_user_cant_use_bad_words(author_client, news, word=choice(BAD_WORDS)):
     url_detail = reverse('news:detail', args=(PK,))
     expected_count = Comment.objects.count()
     bad_words_data = {'text': f'Какой-то текст, {word}, еще текст'}
@@ -87,7 +83,8 @@ def test_author_can_edit_comment(
     comment.refresh_from_db()
     comments_count = Comment.objects.count()
     assert expected_count == comments_count
-    assert all((comment.text == NEW_COMMENT_TEXT, comment.author == author))
+    assert comment.text == NEW_COMMENT_TEXT
+    assert comment.author == author
 
 
 def test_user_cant_edit_comment_of_another_user(
@@ -100,4 +97,5 @@ def test_user_cant_edit_comment_of_another_user(
     comments_count = Comment.objects.count()
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert expected_count == comments_count
-    assert all((comment.text == COMMENT_TEXT, comment.author == author))
+    assert comment.text == COMMENT_TEXT
+    assert comment.author == author

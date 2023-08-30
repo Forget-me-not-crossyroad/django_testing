@@ -17,6 +17,7 @@ def test_client_has_form(client, admin_client, news):
     response = client.get(url)
     admin_response = admin_client.get(url)
     assert (
+        # Проверка на соответствие формы нужному классу
         isinstance(admin_response.context['form'], CommentForm)
         and 'form' not in response.context
     )

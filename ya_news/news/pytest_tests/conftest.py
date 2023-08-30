@@ -21,7 +21,7 @@ def author(django_user_model):
 @pytest.fixture
 def news():
     news = News.objects.create(title='Заголовок', text='Текст новости')
-    return news or None
+    return news
 
 
 @pytest.fixture

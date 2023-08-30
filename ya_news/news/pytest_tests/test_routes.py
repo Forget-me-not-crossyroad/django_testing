@@ -22,8 +22,6 @@ def test_unauthenticated_user_redirect_(client, comment, url):
 
 
 @pytest.mark.parametrize(
-    # Вторым параметром передаём note_object,
-    # в котором будет либо фикстура с объектом заметки, либо None.
     'url, test_client, http_status',
     (
         (reverse('news:home'), lazy_fixture('client'), HTTPStatus.OK),
